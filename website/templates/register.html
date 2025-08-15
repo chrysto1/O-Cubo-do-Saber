@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - O Cubo do Saber</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="icon" type="image/png" href="../static/imgs/logo/logo1.png">
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="/"> <img src="../static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber">
+            </a>
+        </div>
+        <nav class="main-nav">
+            <a href="/sobre">Sobre nós</a>
+            <a href="/" class="btn-cta">Voltar</a>
+        </nav>
+    </header>
+
+    <main class="hero">
+        <div class="form-container">
+            <h2>Formulário de Cadastro</h2>
+            
+            <form action="{{ url_for('register') }}" method="post">
+                <label for="fullname">Nome completo:</label>
+                <input type="text" id="fullname" name="fullname" required>
+
+                <div class="label-container">
+                    <label for="numero_matricula">Número de Matrícula:</label>
+                    <div class="tooltip-container">
+                        <i class="fa-solid fa-circle-question help-icon"></i>
+                        <span class="tooltip-text">
+                            Você consegue este número no site <a href="https://cloud.plataforma.senac.br/senacportalaluno/#/impressao-documentos" target="_blank">SENAC - PORTAL DO ALUNO</a>, selecionando sua turma e escolhendo a documentação.
+                        </span>
+                    </div>
+                </div>
+                <input type="text" id="numero_matricula" name="numero_matricula" required>
+
+                <div class="label-container">
+                    <label for="username">Nome de usuário:</label>
+                    <div class="tooltip-container">
+                        <i class="fa-solid fa-circle-question help-icon"></i>
+                        <span class="tooltip-text">
+                            Este nome de usuário será utilizado para o login nas máquinas.
+                        </span>
+                    </div>
+                </div>
+                <input type="text" id="username" name="username" required>
+
+                <button type="submit">Solicitar Cadastro</button>
+            </form>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="messages-wrapper">
+                {% for category, message in messages %}
+                  <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+        </div>
+    </main>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nós - O Cubo do Saber</title>
+    
+    <meta name="description" content="Conheça a missão do O Cubo do Saber e nossa paixão por uma educação gamificada e inovadora.">
+    <meta name="author" content="Equipe O Cubo do Saber">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='imgs/logo/logo1.png') }}">
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="/">
+                <img src="../static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber">
+
+            </a>
+        </div>
+        <nav class="main-nav">
+            <a href="/sobre">Sobre nós</a>
+            <a href="/cadastro" class="btn-cta">Cadastro</a>
+        </nav>
+    </header>
+
+    <main class="hero">
+        <div class="about-container">
+            <div class="about-image">
+                <img src="../static/imgs/mine/stevealexwolf.png" alt="Personagens explorando">
+            </div>
+            <div class="about-text">
+                <h1>Nossa Missão</h1>
+                <h2>Acreditamos no poder de transformar a educação.</h2>
+                <p>O Cubo do Saber nasceu de uma ideia simples: e se aprender fosse tão cativante quanto um jogo? Nosso propósito é quebrar as barreiras do ensino tradicional, utilizando o universo que muitos amam para construir uma ponte sólida para o conhecimento.</p>
+                <p>Aqui, cada desafio é uma aula, cada construção é um projeto e cada interação é uma oportunidade de crescimento. Queremos provar que a educação pode, e deve, ser uma aventura épica e acessível para todos.</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer-section">
+        <div class="footer-content">
+            <div class="footer-logo-social">
+                <img src="../static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber">
+                <div class="footer-social">
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="https://github.com/chrysto1" target="_blank" aria-label="Github"><i class="fab fa-github"></i></a>
+                    <a href="https://discord.gg/PpwdZNYezf" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+                </div>
+            </div>
+            <div class="footer-contact">
+                <h3>Contate-nos</h3>
+                <p>Rua Pedro Paulino, 77</p>
+                <p>Poço, Maceió - AL, CEP: 57025-340</p>
+                <p>contato.ocubodosaber@gmail.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© Copyright 2025 | O Cubo do Saber | Todos os direitos reservados.</p>
+        </div>
+    </footer>
+</body>
+</html>
