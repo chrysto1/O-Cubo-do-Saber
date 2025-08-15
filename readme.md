@@ -1,6 +1,6 @@
 # 🎲 O Cubo do Saber
 
-![Screenshot da tela inicial do projeto](website/static/imgs/logo/logocomfundo.png)
+![Screenshot da tela inicial do projeto](/static/imgs/logo/logocomfundo.png)
 
 Bem-vindo ao **O Cubo do Saber**, um portal web criado como uma plataforma educacional gamificada. O projeto nasceu com o propósito de transformar a educação, utilizando um universo lúdico e familiar para construir uma ponte sólida para o conhecimento, provando que aprender pode ser uma aventura épica.
 
