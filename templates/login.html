@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - O Cubo do Saber</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="icon" type="image/png" href="/static/imgs/logo/logo1.png">
+</head>
+<body>
+    <header class="main-header">
+        <div class="logo">
+            <a href="/">
+                <img src="/static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber">
+            </a>
+        </div>
+        <nav class="main-nav">
+            <a href="/sobre">Sobre nós</a>
+            
+            {% if current_user.is_authenticated %}
+                <a href="/dashboard">Meu Painel</a>
+                <a href="/logout" class="btn-cta">Sair</a>
+            {% else %}
+                <a href="/login">Login</a>
+                <a href="/cadastro" class="btn-cta">Cadastro</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="hero">
+        <div class="form-container">
+            <h2>Login de Aluno</h2>
+            <br>
+            <form action="/login" method="post">
+                <label for="username">Nome de Usuário:</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+
+                <button type="submit">Entrar</button>
+            </form>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="messages-wrapper">
+                {% for category, message in messages %}
+                  <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+        </div>
+    </main>
+</body>
+</html>

@@ -3,23 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O Cubo do Saber</title>
-    <meta name="description" content="O Cubo do Saber - Sistema de Gerenciamento de Ensino">
-    <meta name="author" content="Equipe O Cubo do Saber">
+    <title>Painel do Aluno - O Cubo do Saber</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <link rel="stylesheet" href="../static/css/styles.css">
     <link rel="icon" type="image/png" href="../static/imgs/logo/logo1.png">
+    
+    <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.0.1/dist/skinview3d.bundle.js"></script>
 </head>
 <body>
     <header class="main-header">
         <div class="logo">
-            <a href="/"> <img src="../static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber"></a>
+            <a href="/">
+                <img src="../static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber">
+            </a>
         </div>
         <nav class="main-nav">
             <a href="/sobre">Sobre nós</a>
@@ -34,17 +35,51 @@
     </header>
 
     <main class="hero">
-        <div class="hero-content">
-            <h1>Construindo conhecimento, bloco a bloco</h1>
-            <p>A curiosidade é o primeiro bloco. O conhecimento é a sua ferramenta. Bem-vindo ao Cubo do Saber, o lugar onde você tem o poder de construir a versão mais incrível do seu futuro.</p>
-            <a href="/cadastro" class="btn-cta-main">Comece a construir</a>
+        <div class="form-container">
+            <h2>Painel de {{ current_user.username }}</h2>
+            
+            <canvas id="skin_container" 
+                    data-skin-url="{% if current_user.skin_url %}{{ '../' + current_user.skin_url }}{% endif %}"
+                    data-default-skin-url="../static/imgs/mine/stevealexwolf.png">
+            </canvas>
+            <form action="/upload_skin" method="post" enctype="multipart/form-data">
+                <label for="skin">Atualizar sua skin (somente .png):</label>
+                <input type="file" id="skin" name="skin" accept=".png" required>
+                <button type="submit">Enviar Skin</button>
+            </form>
+
+            <hr class="form-divider">
+
+            <h3>Alterar Senha</h3>
+            <form action="/change_password" method="post">
+                <label for="current_password">Senha Atual:</label>
+                <input type="password" id="current_password" name="current_password" required>
+
+                <label for="new_password">Nova Senha:</label>
+                <input type="password" id="new_password" name="new_password" required>
+
+                <label for="confirm_password">Confirmar Nova Senha:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+
+                <button type="submit">Alterar Senha</button>
+            </form>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="messages-wrapper">
+                {% for category, message in messages %}
+                  <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
         </div>
     </main>
-
     <footer class="main-footer-section">
         <div class="footer-content">
             <div class="footer-logo-social">
                 <img src="../static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber">
+
                 <div class="footer-social">
                     <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                     <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
@@ -63,5 +98,7 @@
             <p>© Copyright 2025 | O Cubo do Saber | Todos os direitos reservados.</p>
         </div>
     </footer>
+
+    <script src="../static/js/dashboard.js" defer></script>
 </body>
 </html>

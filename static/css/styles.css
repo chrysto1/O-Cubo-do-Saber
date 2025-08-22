@@ -1,3 +1,45 @@
+
+/* Poppins Regular */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/Poppins-Regular.ttf') format('truetype')
+}
+
+/* Poppins Bold */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/static/fonts/Poppins-Bold.ttf') format('truetype')
+}
+
+/* Poppins Medium */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 500;
+  src: url('/static/fonts/Poppins-Medium.ttf') format('truetype')
+}
+
+/* Poppins Light */
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/static/fonts/Poppins-Light.ttf') format('truetype')
+}
+
+/* Press Start 2P */
+@font-face {
+  font-family: 'Press Start 2P';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/static/fonts/PressStart2P-Regular.ttf') format('truetype')
+}
+
+
 /* Reset Básico e Configurações Globais */
 * {
     margin: 0;
@@ -428,4 +470,29 @@ body {
 .tooltip-text a {
     color: #6effa8; /* Verde bem claro para destacar o link */
     font-weight: bold;
+}
+
+/* Skin 3D */
+
+#skin_container {
+    width: 250px;
+    height: 300px;
+    margin: 0 auto 20px auto; /* Centraliza e adiciona espaço abaixo */
+    display: block;
+}
+
+.form-divider {
+    border: none;
+    height: 1px;
+    background-color: rgba(0, 131, 48, 0.5); /* Verde sutil da borda */
+    margin: 30px 0; /* Espaçamento vertical */
+}
+
+.form-container h3 {
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
 }
