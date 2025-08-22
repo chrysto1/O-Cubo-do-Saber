@@ -5,13 +5,22 @@ import os
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+import logging
 
+# --- CONFIGURAÇÃO DO LOGGING ---
+# Cria um ficheiro de log para depuração no servidor
+logging.basicConfig(filename='debug.log', level=logging.INFO, 
+                    format=f'%(asctime)s %(levelname)s : %(message)s')
+
+# Carrega as variáveis de ambiente do ficheiro .env
 load_dotenv()
 
 app = Flask(__name__)
+# Carrega a chave secreta de forma segura
 app.secret_key = os.environ.get('SECRET_KEY')
 
-# --- CONFIGURAÇÕES ---
+# --- CONFIGURAÇÕES GERAIS ---
+# Caminho correto para a pasta de skins
 UPLOAD_FOLDER = 'static/imgs/skins'
 ALLOWED_EXTENSIONS = {'png'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -27,10 +36,11 @@ db_config = {
 # --- CONFIGURAÇÃO DO SISTEMA DE LOGIN ---
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
-login_manager.login_message = "Você precisa estar logado para acessar esta página."
+login_manager.login_view = 'login' # Página para a qual os utilizadores não logados são redirecionados
+login_manager.login_message = "Você precisa estar logado para aceder a esta página."
 login_manager.login_message_category = "error"
 
+# --- MODELO DE UTILIZADOR PARA O FLASK-LOGIN ---
 class User(UserMixin):
     def __init__(self, id, username, fullname, numero_matricula, skin_url):
         self.id = id
@@ -41,16 +51,23 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-    user_data = cursor.fetchone()
-    conn.close()
-    if user_data:
-        return User(user_data['id'], user_data['username'], user_data['fullname'], user_data['numero_matricula'], user_data['skin_url'])
+    # Carrega um utilizador da base de dados para manter a sessão
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+        user_data = cursor.fetchone()
+        if user_data:
+            return User(user_data['id'], user_data['username'], user_data['fullname'], user_data['numero_matricula'], user_data['skin_url'])
+    except Exception as e:
+        app.logger.error(f"Erro ao carregar utilizador: {e}")
+    finally:
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
     return None
 
-# --- ROTAS PÚBLICAS E DE CADASTRO (continuam iguais) ---
+# --- ROTAS PÚBLICAS E DE REGISTO ---
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -69,7 +86,7 @@ def register_page():
 
 @app.route('/register', methods=['POST'])
 def register():
-    # Lógica para adicionar na fila de espera (pedidos_de_usuario)
+    # Apenas adiciona à "fila de espera" (pedidos_de_usuario)
     fullname = request.form['fullname']
     username = request.form['username']
     numero_matricula = request.form['numero_matricula']
@@ -81,32 +98,56 @@ def register():
         cursor.execute(query, (fullname, username, password_padrao, numero_matricula))
         conn.commit()
         return redirect(url_for('success'))
-    except mysql.connector.Error:
-        flash("Erro! Seu usuário ou matrícula podem já existir na nossa fila de espera.", "error")
+    except mysql.connector.Error as e:
+        app.logger.error(f"Erro no registo: {e}")
+        flash("Erro! O seu utilizador ou matrícula podem já existir na nossa fila de espera.", "error")
         return redirect(url_for('register_page'))
     finally:
         if 'conn' in locals() and conn.is_connected():
             cursor.close()
             conn.close()
 
-# --- ROTAS DE AUTENTICAÇÃO E PAINEL ---
+# --- ROTAS DE AUTENTICAÇÃO E PAINEL PRIVADO ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Lógica de login (continua igual)
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-        user_data = cursor.fetchone()
-        conn.close()
-        if user_data and check_password_hash(user_data['password_hash'], password):
-            user = User(user_data['id'], user_data['username'], user_data['fullname'], user_data['numero_matricula'], user_data['skin_url'])
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Usuário ou senha inválidos.', 'error')
+        
+        app.logger.info(f"--- TENTATIVA DE LOGIN --- Username: '{username}'")
+        
+        try:
+            conn = mysql.connector.connect(**db_config)
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+            user_data = cursor.fetchone()
+
+            if user_data:
+                app.logger.info(f"Utilizador '{username}' encontrado no banco de dados.")
+                is_password_correct = check_password_hash(user_data['password_hash'], password)
+                app.logger.info(f"A senha para '{username}' está correta? {is_password_correct}")
+
+                if is_password_correct:
+                    app.logger.info(f"SUCESSO: Senha correta para '{username}'. A fazer o login.")
+                    user = User(user_data['id'], user_data['username'], user_data['fullname'], user_data['numero_matricula'], user_data['skin_url'])
+                    login_user(user)
+                    return redirect(url_for('dashboard'))
+                else:
+                    app.logger.warning(f"FALHA: A verificação da senha falhou para '{username}'.")
+            else:
+                app.logger.warning(f"FALHA: Utilizador '{username}' não encontrado na tabela 'users'.")
+        
+        except Exception as e:
+            app.logger.error(f"Erro durante o processo de login: {e}")
+            flash('Ocorreu um erro no servidor. Tente novamente mais tarde.', 'error')
+            return render_template('login.html')
+        finally:
+            if 'conn' in locals() and conn.is_connected():
+                cursor.close()
+                conn.close()
+
+        flash('Utilizador ou senha inválidos.', 'error')
+    
     return render_template('login.html')
 
 @app.route('/logout')
@@ -123,27 +164,28 @@ def dashboard():
 @app.route('/upload_skin', methods=['POST'])
 @login_required
 def upload_skin():
-    # Lógica de upload de skin (continua igual)
     if 'skin' not in request.files or request.files['skin'].filename == '':
-        flash('Nenhum arquivo de skin selecionado.', 'error')
+        flash('Nenhum ficheiro de skin selecionado.', 'error')
         return redirect(url_for('dashboard'))
+    
     file = request.files['skin']
     if file and '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS:
         filename = f"{current_user.username}.png"
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
+
         skin_url = f"static/imgs/skins/{filename}"
+        
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
         cursor.execute("UPDATE users SET skin_url = %s WHERE id = %s", (skin_url, current_user.id))
         conn.commit()
         conn.close()
-        flash('Sua skin foi atualizada com sucesso!', 'success')
+        flash('A sua skin foi atualizada com sucesso!', 'success')
     else:
-        flash('Formato de arquivo inválido. Apenas .png é permitido.', 'error')
+        flash('Formato de ficheiro inválido. Apenas .png é permitido.', 'error')
     return redirect(url_for('dashboard'))
 
-# --- NOVA ROTA PARA ALTERAÇÃO DE SENHA ---
 @app.route('/change_password', methods=['POST'])
 @login_required
 def change_password():
@@ -155,23 +197,29 @@ def change_password():
         flash('A nova senha e a confirmação não correspondem.', 'error')
         return redirect(url_for('dashboard'))
 
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT password_hash FROM users WHERE id = %s", (current_user.id,))
-    user_data = cursor.fetchone()
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT password_hash FROM users WHERE id = %s", (current_user.id,))
+        user_data = cursor.fetchone()
 
-    if not user_data or not check_password_hash(user_data['password_hash'], current_password):
-        conn.close()
-        flash('A sua senha atual está incorreta.', 'error')
-        return redirect(url_for('dashboard'))
-    
-    # Se a senha atual estiver correta, atualiza para a nova
-    new_password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
-    cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_password_hash, current_user.id))
-    conn.commit()
-    conn.close()
+        if not user_data or not check_password_hash(user_data['password_hash'], current_password):
+            flash('A sua senha atual está incorreta.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        new_password_hash = generate_password_hash(new_password, method='pbkdf2:sha256')
+        cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_password_hash, current_user.id))
+        conn.commit()
 
-    flash('Senha alterada com sucesso!', 'success')
+        flash('Senha alterada com sucesso!', 'success')
+    except Exception as e:
+        app.logger.error(f"Erro ao alterar a senha: {e}")
+        flash('Ocorreu um erro ao alterar a sua senha.', 'error')
+    finally:
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
+
     return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
