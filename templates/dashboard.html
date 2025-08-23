@@ -39,8 +39,10 @@
             <h2>Painel de {{ current_user.username }}</h2>
             
             <canvas id="skin_container" 
-                    data-skin-url="{% if current_user.skin_url %}{{ '../' + current_user.skin_url }}{% endif %}"
-                    data-default-skin-url="../static/imgs/mine/stevealexwolf.png">
+                    {% if current_user.skin_url %}
+                        data-skin-url="../{{ current_user.skin_url }}"
+                    {% endif %}
+                    data-default-skin-url="../static/imgs/skins/skindefault.png">
             </canvas>
             <form action="/upload_skin" method="post" enctype="multipart/form-data">
                 <label for="skin">Atualizar sua skin (somente .png):</label>
