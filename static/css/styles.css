@@ -501,6 +501,14 @@ body {
 /* ESTILOS PARA O LAYOUT DO DASHBOARD        */
 /* ========================================= */
 
+.dashboard-title {
+    font-family: 'Press Start 2P', cursive;
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 30px; /* Aumenta o espaço abaixo do título */
+    color: #fff;
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Cria duas colunas de largura igual */
