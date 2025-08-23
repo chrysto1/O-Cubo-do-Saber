@@ -535,6 +535,6 @@ body {
 }
 
 /* Ajusta a largura máxima do container para acomodar as colunas */
-.form-container {
+.form-container-dashboard {
     max-width: 900px;
 }
