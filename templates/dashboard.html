@@ -36,9 +36,10 @@
 
     <main class="hero">
         <div class="form-container dashboard-grid">
+            <h2>Painel de {{ current_user.username }}</h2>
 
             <div class="dashboard-column">
-                <h3>Gerir a sua Skin</h3>
+                <h3>Altere sua skin</h3>
                 <canvas id="skin_container" 
                         {% if current_user.skin_url %}
                             data-skin-url="../{{ current_user.skin_url }}"
