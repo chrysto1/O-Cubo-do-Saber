@@ -501,6 +501,7 @@ body {
 /* ESTILOS PARA O LAYOUT DO DASHBOARD        */
 /* ========================================= */
 
+/* Título Principal do Painel */
 .dashboard-title {
     font-family: 'Press Start 2P', cursive;
     text-align: center;
@@ -509,20 +510,12 @@ body {
     color: #fff;
 }
 
+/* Container do Grid */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr; /* Cria duas colunas de largura igual */
-    grid-template-rows: auto;
-    grid-template-areas: 
-        "col1 col2"
-        "messages messages"; /* A área de mensagens ocupa ambas as colunas */
     gap: 40px; /* Espaço entre as colunas */
-    max-width: 900px; /* Aumenta a largura máxima para acomodar as colunas */
-}
-
-.dashboard-column {
-    display: flex;
-    flex-direction: column;
+    align-items: start; /* Alinha os itens no topo */
 }
 
 .dashboard-column h3 {
@@ -534,6 +527,14 @@ body {
     margin-bottom: 20px;
 }
 
+/* Área de Mensagens */
 .dashboard-messages {
-    grid-area: messages; /* Posiciona esta div na área 'messages' definida no grid */
+    /* Esta área não precisa de grid-area se o grid for simples */
+    grid-column: 1 / -1; /* Faz esta div ocupar todas as colunas */
+    margin-top: 20px;
+}
+
+/* Ajusta a largura máxima do container para acomodar as colunas */
+.form-container {
+    max-width: 900px;
 }
