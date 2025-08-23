@@ -496,3 +496,36 @@ body {
     color: #fff;
     margin-bottom: 20px;
 }
+
+/* ========================================= */
+/* ESTILOS PARA O LAYOUT DO DASHBOARD        */
+/* ========================================= */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Cria duas colunas de largura igual */
+    grid-template-rows: auto;
+    grid-template-areas: 
+        "col1 col2"
+        "messages messages"; /* A área de mensagens ocupa ambas as colunas */
+    gap: 40px; /* Espaço entre as colunas */
+    max-width: 900px; /* Aumenta a largura máxima para acomodar as colunas */
+}
+
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-column h3 {
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+.dashboard-messages {
+    grid-area: messages; /* Posiciona esta div na área 'messages' definida no grid */
+}

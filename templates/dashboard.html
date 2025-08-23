@@ -35,46 +35,50 @@
     </header>
 
     <main class="hero">
-        <div class="form-container">
-            <h2>Painel de {{ current_user.username }}</h2>
+        <div class="form-container dashboard-grid">
+
+            <div class="dashboard-column">
+                <h3>Gerir a sua Skin</h3>
+                <canvas id="skin_container" 
+                        {% if current_user.skin_url %}
+                            data-skin-url="../{{ current_user.skin_url }}"
+                        {% endif %}
+                        data-default-skin-url="../static/imgs/skins/skindefault.png">
+                </canvas>
+                <form action="/upload_skin" method="post" enctype="multipart/form-data">
+                    <label for="skin">Atualizar sua skin (.png):</label>
+                    <input type="file" id="skin" name="skin" accept=".png" required>
+                    <button type="submit">Enviar Skin</button>
+                </form>
+            </div>
+
+            <div class="dashboard-column">
+                <h3>Alterar Senha</h3>
+                <form action="/change_password" method="post">
+                    <label for="current_password">Senha Atual:</label>
+                    <input type="password" id="current_password" name="current_password" required>
+
+                    <label for="new_password">Nova Senha:</label>
+                    <input type="password" id="new_password" name="new_password" required>
+
+                    <label for="confirm_password">Confirmar Nova Senha:</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+
+                    <button type="submit">Alterar Senha</button>
+                </form>
+            </div>
             
-            <canvas id="skin_container" 
-                    {% if current_user.skin_url %}
-                        data-skin-url="../{{ current_user.skin_url }}"
-                    {% endif %}
-                    data-default-skin-url="../static/imgs/skins/skindefault.png">
-            </canvas>
-            <form action="/upload_skin" method="post" enctype="multipart/form-data">
-                <label for="skin">Atualizar sua skin (somente .png):</label>
-                <input type="file" id="skin" name="skin" accept=".png" required>
-                <button type="submit">Enviar Skin</button>
-            </form>
-
-            <hr class="form-divider">
-
-            <h3>Alterar Senha</h3>
-            <form action="/change_password" method="post">
-                <label for="current_password">Senha Atual:</label>
-                <input type="password" id="current_password" name="current_password" required>
-
-                <label for="new_password">Nova Senha:</label>
-                <input type="password" id="new_password" name="new_password" required>
-
-                <label for="confirm_password">Confirmar Nova Senha:</label>
-                <input type="password" id="confirm_password" name="confirm_password" required>
-
-                <button type="submit">Alterar Senha</button>
-            </form>
-            
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                <div class="messages-wrapper">
-                {% for category, message in messages %}
-                  <div class="message {{ category }}">{{ message }}</div>
-                {% endfor %}
-                </div>
-              {% endif %}
-            {% endwith %}
+            <div class="dashboard-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    <div class="messages-wrapper">
+                    {% for category, message in messages %}
+                      <div class="message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+            </div>
         </div>
     </main>
     <footer class="main-footer-section">
