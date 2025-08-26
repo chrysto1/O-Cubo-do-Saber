@@ -23,9 +23,9 @@
             </a>
         </div>
         <nav class="main-nav">
-            <a href="/sobre">Sobre nós</a>
+            <a href="/sobre">Sobre</a>
             {% if current_user.is_authenticated %}
-                <a href="/dashboard">Meu Painel</a>
+                <a href="/dashboard">Meu painel</a>
                 <a href="/logout" class="btn-cta">Sair</a>
             {% else %}
                 <a href="/login">Login</a>
@@ -40,7 +40,7 @@
             <br>
             <div class="dashboard-grid">
                 <div class="dashboard-column">
-                    <h3>Gerir a sua Skin</h3>
+                    <h3>Altere sua skin</h3>
                     <canvas id="skin_container" 
                             {% if current_user.skin_url %}
                                 data-skin-url="../{{ current_user.skin_url }}"
@@ -108,6 +108,6 @@
         </div>
     </footer>
 
-    <script src="../static/js/dashboard.js" defer></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
 </body>
 </html>

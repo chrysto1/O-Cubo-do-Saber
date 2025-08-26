@@ -22,9 +22,9 @@
             <a href="/"> <img src="../static/imgs/logo/logobranco.png" alt="Logo O Cubo do Saber"></a>
         </div>
         <nav class="main-nav">
-            <a href="/sobre">Sobre nós</a>
+            <a href="/sobre">Sobre</a>
             {% if current_user.is_authenticated %}
-                <a href="/dashboard">Meu Painel</a>
+                <a href="/dashboard">Meu painel</a>
                 <a href="/logout" class="btn-cta">Sair</a>
             {% else %}
                 <a href="/login">Login</a>
