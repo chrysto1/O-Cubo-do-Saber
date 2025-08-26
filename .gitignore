@@ -1,6 +1,9 @@
 # Arquivos de ambiente
 .env
 
+# Log
+debug.log
+
 # Cache do Python
 __pycache__/
 *.pyc
