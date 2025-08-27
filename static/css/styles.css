@@ -116,8 +116,8 @@
   color: white;
   border: none;
   border-radius: 5px;
-  padding: 8px 20px;  /* Reduzido de 12px para 8px */
-  font-size: 0.95rem; /* Reduzido um pouco o tamanho da fonte */
+  padding: 4px 20px;  /* Reduzido ainda mais na vertical */
+  font-size: 0.9rem;  /* Reduzido mais o tamanho da fonte */
   cursor: pointer;
   transition: background-color 0.3s ease;
   width: 100%;
@@ -125,6 +125,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  height: 32px;  /* Definindo uma altura fixa menor */
 }
 
 .upload-button:hover {
