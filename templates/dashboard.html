@@ -41,12 +41,69 @@
             <div class="dashboard-grid">
                 <div class="dashboard-column">
                     <h3>Altere sua skin</h3>
-                    <canvas id="skinCanvas" width="200" height="400" data-skin-url="{{ skin_url }}"></canvas>
-                    <form action="/dashboard" method="post" enctype="multipart/form-data">
-                        <label for="skin">Atualizar sua skin (.png):</label>
-                        <input type="file" id="skin" name="skin" accept=".png" required>
-                        <button type="submit">Enviar Skin</button>
+                    <div id="skinContainer" data-skin-url="{{ skin_url }}"></div>
+                    <form action="/dashboard" method="post" enctype="multipart/form-data" class="skin-upload-form">
+                        <div class="file-upload-container">
+                            <div class="file-upload-area">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <p class="upload-text">Arraste sua skin aqui ou clique para selecionar</p>
+                                <input type="file" id="skin" name="skin" accept=".png" required class="file-input">
+                            </div>
+                            <div class="selected-file-name">Nenhum arquivo selecionado</div>
+                        </div>
+                        <button type="submit" class="upload-button">
+                            <i class="fas fa-upload"></i> Enviar Skin
+                        </button>
                     </form>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const fileInput = document.querySelector('.file-input');
+                            const uploadArea = document.querySelector('.file-upload-area');
+                            const selectedFileName = document.querySelector('.selected-file-name');
+                            
+                            // Atualiza o nome do arquivo quando selecionado
+                            fileInput.addEventListener('change', function() {
+                                if (this.files.length > 0) {
+                                    selectedFileName.textContent = this.files[0].name;
+                                    uploadArea.classList.add('has-file');
+                                } else {
+                                    selectedFileName.textContent = 'Nenhum arquivo selecionado';
+                                    uploadArea.classList.remove('has-file');
+                                }
+                            });
+                            
+                            // Permite arrastar e soltar
+                            uploadArea.addEventListener('dragover', function(e) {
+                                e.preventDefault();
+                                uploadArea.classList.add('dragover');
+                            });
+                            
+                            uploadArea.addEventListener('dragleave', function() {
+                                uploadArea.classList.remove('dragover');
+                            });
+                            
+                            uploadArea.addEventListener('drop', function(e) {
+                                e.preventDefault();
+                                uploadArea.classList.remove('dragover');
+                                
+                                if (e.dataTransfer.files.length > 0) {
+                                    fileInput.files = e.dataTransfer.files;
+                                    selectedFileName.textContent = e.dataTransfer.files[0].name;
+                                    uploadArea.classList.add('has-file');
+                                    
+                                    // Dispara o evento change para qualquer listener
+                                    const event = new Event('change');
+                                    fileInput.dispatchEvent(event);
+                                }
+                            });
+                            
+                            // Clique na área de upload ativa o input de arquivo
+                            uploadArea.addEventListener('click', function() {
+                                fileInput.click();
+                            });
+                        });
+                    </script>
                 </div>
 
                 <div class="dashboard-column">
@@ -102,7 +159,9 @@
             <p>© Copyright 2025 | O Cubo do Saber | Todos os direitos reservados.</p>
         </div>
     </footer>
-
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js" integrity="sha512-/WaZCC76Yn6MLEoK6b9np9yiLBet/RngBS33X1P0SHuag6j2E0e5rT7jbA2CvXCydN6+FkDYNx8FBM+vkzsthw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/skinview3d/3.0.1/skinview3d.bundle.js"></script>
+    <script src="../static/js/dashboard.js"></script>
 </body>
 </html>
