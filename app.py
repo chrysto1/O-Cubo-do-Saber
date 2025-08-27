@@ -156,6 +156,56 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+@app.route('/upload_skin', methods=['POST'])
+@login_required
+def upload_skin():
+    if 'skin_file' not in request.files:
+        flash('Nenhum arquivo foi enviado.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    file = request.files['skin_file']
+
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if file and allowed_file(file.filename):
+        # Cria um nome de arquivo seguro e único (ex: user_1.png)
+        filename = f"user_{current_user.id}.png"
+        
+        # Define a pasta de upload
+        upload_folder = os.path.join(app.static_folder, 'imgs', 'skins')
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+        
+        # Salva o arquivo no servidor
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
+
+        # Gera a URL que será salva no banco de dados (ex: /static/imgs/skins/user_1.png)
+        skin_url_for_db = url_for('static', filename=f'imgs/skins/{filename}')
+
+        # Atualiza o caminho da skin no banco de dados para o usuário atual
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET skin_url = %s WHERE id = %s", (skin_url_for_db, current_user.id))
+            conn.commit()
+            flash('Skin atualizada com sucesso!', 'success')
+            app.logger.info(f"Skin para o usuário ID {current_user.id} foi atualizada.")
+        except Exception as e:
+            flash('Erro ao salvar a skin no banco de dados.', 'danger')
+            app.logger.error(f"Erro de DB ao atualizar skin para ID {current_user.id}: {e}")
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
+        
+        return redirect(url_for('dashboard'))
+    else:
+        flash('Formato de arquivo inválido. Apenas .png é permitido.', 'danger')
+        return redirect(url_for('dashboard'))
+
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
