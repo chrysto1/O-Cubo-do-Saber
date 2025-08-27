@@ -634,7 +634,7 @@ body {
     width: 250px;  /* Largura um pouco maior para o 3D */
     height: 320px; /* Altura ajustada para o personagem */
     background-color: transparent;
-    border: 1px solid #ddd;
+    /* border: 1px solid #ddd; */
     border-radius: 4px;
     margin: 0 auto 15px auto; /* Centraliza e adiciona margem inferior */
     cursor: grab; /* Indica que o modelo é interativo */
