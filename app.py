@@ -157,9 +157,33 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route('/dashboard')
-@login_required
 def dashboard():
-    return render_template('dashboard.html')
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    username = session['username']
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    # Busca os dados do usuário
+    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    user = cursor.fetchone()
+    
+    cursor.close()
+    db.close()
+
+    if user:
+        # Verifica se o usuário tem uma skin_url definida
+        # Se não tiver, usa a skin padrão
+        skin_url = user.get('skin_url')
+        if not skin_url:
+            skin_url = url_for('static', filename='imgs/skins/skindefault.png')
+            
+        return render_template('dashboard.html', username=username, fullname=user.get('fullname'), skin_url=skin_url)
+    else:
+        # Se o usuário não for encontrado na sessão, redireciona para o login
+        session.pop('username', None)
+        return redirect(url_for('login'))
 
 @app.route('/upload_skin', methods=['POST'])
 @login_required
