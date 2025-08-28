@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import logging
+import requests
+import time
+
 
 # --- CONFIGURAÇÃO DO LOGGING ---
 # Cria um ficheiro de log para depuração no servidor
@@ -156,42 +159,157 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    return render_template('dashboard.html')
+ALLOWED_EXTENSIONS = {'png'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/upload_skin', methods=['POST'])
 @login_required
 def upload_skin():
-    if 'skin' not in request.files or request.files['skin'].filename == '':
-        flash('Nenhum ficheiro de skin selecionado.', 'error')
+    if 'skin_file' not in request.files:
+        flash('Nenhum arquivo foi enviado.', 'danger')
         return redirect(url_for('dashboard'))
     
-    file = request.files['skin']
-    if file and '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS:
-        filename = f"{current_user.username}.png"
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file = request.files['skin_file']
+
+    if file.filename == '':
+        flash('Nenhum arquivo selecionado.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    if file and allowed_file(file.filename):
+        # Cria um nome de arquivo seguro e único (ex: user_1.png)
+        filename = f"user_{current_user.id}.png"
+        
+        # Define a pasta de upload
+        upload_folder = os.path.join(app.static_folder, 'imgs', 'skins')
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+        
+        # Salva o arquivo no servidor
+        file_path = os.path.join(upload_folder, filename)
         file.save(file_path)
 
-        skin_url = f"static/imgs/skins/{filename}"
+        # Gera a URL que será salva no banco de dados (ex: /static/imgs/skins/user_1.png)
+        skin_url_for_db = url_for('static', filename=f'imgs/skins/{filename}')
+
+        # Atualiza o caminho da skin no banco de dados para o usuário atual
+        conn = get_db_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET skin_url = %s WHERE id = %s", (skin_url_for_db, current_user.id))
+            conn.commit()
+            flash('Skin atualizada com sucesso!', 'success')
+            app.logger.info(f"Skin para o usuário ID {current_user.id} foi atualizada.")
+        except Exception as e:
+            flash('Erro ao salvar a skin no banco de dados.', 'danger')
+            app.logger.error(f"Erro de DB ao atualizar skin para ID {current_user.id}: {e}")
+        finally:
+            if conn.is_connected():
+                cursor.close()
+                conn.close()
         
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-        cursor.execute("UPDATE users SET skin_url = %s WHERE id = %s", (skin_url, current_user.id))
-        conn.commit()
-        conn.close()
-        flash('A sua skin foi atualizada com sucesso!', 'success')
+        return redirect(url_for('dashboard'))
     else:
-        flash('Formato de ficheiro inválido. Apenas .png é permitido.', 'error')
-    return redirect(url_for('dashboard'))
+        flash('Formato de arquivo inválido. Apenas .png é permitido.', 'danger')
+        return redirect(url_for('dashboard'))
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+@login_required
+def dashboard():
+    # Se o método for POST, significa que o utilizador está a enviar a skin
+    if request.method == 'POST':
+        if 'skin' not in request.files:
+            flash('Nenhum ficheiro de skin selecionado.', 'error')
+            return redirect(url_for('dashboard'))
+
+        file = request.files['skin']
+
+        if file.filename == '':
+            flash('Nenhum ficheiro selecionado.', 'error')
+            return redirect(url_for('dashboard'))
+
+        if file and allowed_file(file.filename):
+            try:
+                # Salva o arquivo localmente para a pré-visualização no dashboard
+                filename = f"{current_user.username}.png"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file_content = file.read()
+                with open(file_path, 'wb') as f:
+                    f.write(file_content)
+
+                # URL da API do Mineskin
+                MINESKIN_API_URL = "https://api.mineskin.org/generate/upload"
+                files_for_api = {'file': (file.filename, file_content, 'image/png')}
+                
+                app.logger.info(f"A enviar a skin para a API Mineskin para o utilizador {current_user.username}...")
+                response = requests.post(MINESKIN_API_URL, files=files_for_api, timeout=15)
+                response.raise_for_status()
+                
+                skin_data = response.json()
+                app.logger.info("Resposta da API Mineskin recebida com sucesso.")
+
+                # Extrai os dados da resposta da API
+                value = skin_data['data']['texture']['value']
+                signature = skin_data['data']['texture']['signature']
+                timestamp = int(time.time() * 1000)
+                nick = current_user.username
+
+                # Conecta ao banco de dados e insere/atualiza os dados na tabela 'skins'
+                conn = mysql.connector.connect(**db_config)
+                cursor = conn.cursor()
+                
+                cursor.execute("SELECT id FROM skins WHERE nick = %s", (nick,))
+                result = cursor.fetchone()
+                
+                if result:
+                    cursor.execute("""
+                        UPDATE skins SET value = %s, signature = %s, timestamp = %s WHERE nick = %s
+                    """, (value, signature, timestamp, nick))
+                else:
+                    cursor.execute("""
+                        INSERT INTO skins (nick, value, signature, timestamp) VALUES (%s, %s, %s, %s)
+                    """, (nick, value, signature, timestamp))
+                
+                # Atualiza a URL da skin na tabela 'users' para a pré-visualização
+                skin_url_for_db = f"static/imgs/skins/{filename}"
+                cursor.execute("UPDATE users SET skin_url = %s WHERE id = %s", (skin_url_for_db, current_user.id))
+
+                conn.commit()
+                flash('A sua skin foi atualizada com sucesso no jogo!', 'success')
+
+            except requests.exceptions.RequestException as e:
+                app.logger.error(f"Erro ao comunicar com o serviço de skins: {e}")
+                flash(f'Erro ao comunicar com o serviço de skins. Tente novamente mais tarde.', 'danger')
+            except Exception as e:
+                app.logger.error(f"Ocorreu um erro inesperado durante o upload da skin: {e}")
+                flash(f'Ocorreu um erro inesperado: {e}', 'danger')
+            finally:
+                if 'conn' in locals() and conn.is_connected():
+                    cursor.close()
+                    conn.close()
+        else:
+            flash('Formato de ficheiro inválido. Apenas .png é permitido.', 'error')
+        
+        # Após o POST, redireciona para a mesma página para evitar reenvio do formulário
+        return redirect(url_for('dashboard'))
+
+    # Se o método for GET, verifica se o usuário tem uma skin definida
+    # Se não tiver, usa a skin padrão
+    skin_url = current_user.skin_url
+    if not skin_url or not os.path.exists(os.path.join(app.static_folder, skin_url.replace('/static/', '').replace('static/', ''))):
+        skin_url = '/static/imgs/skins/skindefault.png'
+    
+    # Renderiza a página com a skin_url
+    return render_template('dashboard.html', skin_url=skin_url)
 
 @app.route('/change_password', methods=['POST'])
 @login_required
 def change_password():
-    current_password = request.form['current_password']
-    new_password = request.form['new_password']
-    confirm_password = request.form['confirm_password']
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
 
     if new_password != confirm_password:
         flash('A nova senha e a confirmação não correspondem.', 'error')

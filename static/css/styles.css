@@ -646,3 +646,91 @@ body {
 #skinContainer:active {
     cursor: grabbing;
 }
+
+/* Adicione este bloco no final de styles.css */
+
+/* Container principal para os popups (toasts) */
+#flash-container {
+    position: fixed; /* Fica fixo na tela, mesmo com scroll */
+    top: 20px;
+    right: 20px;
+    z-index: 1050; /* Garante que fique por cima de outros elementos */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaçamento entre múltiplos popups */
+}
+
+/* Estilo individual de cada popup */
+.flash-popup {
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: #fff;
+    font-family: Arial, sans-serif; /* Usamos uma fonte mais legível para notificações */
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateX(100%); /* Começa fora da tela à direita */
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Animação de entrada e saída */
+}
+
+/* Estado visível do popup */
+.flash-popup.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Estilos para cada tipo de mensagem (baseado nas categorias do Flask) */
+.flash-popup.success {
+    background-color: #2ecc71; /* Verde */
+}
+.flash-popup.danger {
+    background-color: #e74c3c; /* Vermelho */
+}
+.flash-popup.info {
+    background-color: #3498db; /* Azul */
+}
+.flash-popup.warning {
+    background-color: #f39c12; /* Laranja */
+}
+
+/* Ícone opcional antes da mensagem (usando SVG embutido) */
+.flash-popup::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Ícones para cada tipo de mensagem */
+.flash-popup.success::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z'/%3E%3C/svg%3E");
+}
+.flash-popup.danger::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+}
+.flash-popup.info::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z'/%3E%3C/svg%3E");
+}
+
+/* Botão de fechar (opcional, mas recomendado) */
+.flash-close-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.flash-close-btn:hover {
+    opacity: 1;
+}

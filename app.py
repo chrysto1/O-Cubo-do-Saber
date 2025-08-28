@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import logging
+import requests
+import time
+
 
 # --- CONFIGURAÇÃO DO LOGGING ---
 # Cria um ficheiro de log para depuração no servidor
@@ -156,6 +159,12 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+ALLOWED_EXTENSIONS = {'png'}
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/upload_skin', methods=['POST'])
 @login_required
 def upload_skin():
@@ -286,15 +295,21 @@ def dashboard():
         # Após o POST, redireciona para a mesma página para evitar reenvio do formulário
         return redirect(url_for('dashboard'))
 
-    # Se o método for GET, apenas renderiza a página normalmente
-    return render_template('dashboard.html')
+    # Se o método for GET, verifica se o usuário tem uma skin definida
+    # Se não tiver, usa a skin padrão
+    skin_url = current_user.skin_url
+    if not skin_url or not os.path.exists(os.path.join(app.static_folder, skin_url.replace('/static/', '').replace('static/', ''))):
+        skin_url = '/static/imgs/skins/skindefault.png'
+    
+    # Renderiza a página com a skin_url
+    return render_template('dashboard.html', skin_url=skin_url)
 
 @app.route('/change_password', methods=['POST'])
 @login_required
 def change_password():
-    current_password = request.form['current_password']
-    new_password = request.form['new_password']
-    confirm_password = request.form['confirm_password']
+    current_password = request.form.get['current_password']
+    new_password = request.form.get['new_password']
+    confirm_password = request.form.get['confirm_password']
 
     if new_password != confirm_password:
         flash('A nova senha e a confirmação não correspondem.', 'error')
